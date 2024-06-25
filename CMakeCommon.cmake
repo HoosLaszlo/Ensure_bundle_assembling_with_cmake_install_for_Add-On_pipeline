@@ -228,10 +228,19 @@ function(AddOnLinkLibraries target UsedPackages)
         set(linkLibrariesInstallPath $<TARGET_BUNDLE_DIR_NAME:${target}>/Contents/Frameworks)
     endif()
 
-    install(
-        IMPORTED_RUNTIME_ARTIFACTS ${UsedPackages}
-        DESTINATION ${linkLibrariesInstallPath}
-    )
+    foreach(UsedPackage ${UsedPackages})
+        get_target_property(TargetType ${UsedPackage} TYPE)
+        if (TargetType STREQUAL SHARED_LIBRARY)
+            list(APPEND SharedUsedLibraries ${UsedPackage})
+        endif()
+    endforeach()
+
+    if (${SharedUsedLibraries})
+        install(
+            IMPORTED_RUNTIME_ARTIFACTS ${SharedUsedLibraries}
+            DESTINATION ${linkLibrariesInstallPath}
+        )
+    endif()
 
     if (WIN32)
         foreach(UsedPackage ${UsedPackages})
